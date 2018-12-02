@@ -2,7 +2,7 @@
 #StepComm, a serial terminal emulator in Python
 #Copyright (C) 2018  William B Hunter
 #
-#This program is free software: you can redistribute it and/or modify
+#This program is free software: you can fgistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
@@ -65,20 +65,22 @@ class pycom_tk(tk.Frame):
         #tk.Frame.__init__(self,parent)
         tk.Frame.__init__(self,parent)
         self.root = parent
-        self.root.wm_title("BillComm - A simple Serial Emulator - (C)2018 William B Hunter")
+        self.root.wm_title("StepComm - Serial Terminal Emulator in Python (C)2018 William B Hunter")
         self.grid_rowconfigure(0, weight=1) # resizable main frame
         self.grid_columnconfigure(0, weight=1) # resizable main frame
 
 
-        self.about_txt = """StepComm Rel 20181128
+        self.about_txt = """StepComm Rev 20181201
 <c>2018 William B Hunter
-This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
-This is free software, and you are welcome to redistribute it
-under certain conditions; type `show c' for details.
-
-A simple serial communication program with some nice features geared
+A Serial Terminal Emulator with some nice features geared
 towards engineers, technicians, and hobbyists who need to debug
 serial controlled equipment and projects. No Warranty. Have Fun!
+
+This program comes with ABSOLUTELY NO WARRANTY;
+This is free software, and you are welcome to redistribute it
+under the terms of the GNU General Public License as published by
+the Free Software Foundation.
+
 """
         self.license_txt = """StepComm Rel 20181128
 <c>2018 William B Hunter
@@ -110,8 +112,8 @@ options menu allows you to change the way things are displayed."""
         ##         global variables        ##
         #####################################
         self.bgcolor = 'white'
-        self.txcolor = 'blue'
-        self.rxcolor = 'red'
+        self.txcolor = 'red'
+        self.rxcolor = 'blue'
         self.bordcolor = "light gray"
         default_font = tk.font.nametofont("TkDefaultFont")
         default_font.configure(family="Fixedsys",size=8)
@@ -562,6 +564,17 @@ options menu allows you to change the way things are displayed."""
                 else:
                     #print('Linux, ignored CR')
                     self.rxnl_ignore = ' '
+            elif c == b'\b':
+                #print('RX CHAR=BS')
+                try:
+                    prevtagchar = self.textarea.index("rxtext.last-1c")
+                    #print('last rxchar at {}'.format(prevtagchar))
+                    #print('last char ascii is "{}"'.format(self.textarea.get(prevtagchar)))
+                    #print('delete ascii char{} at index {}'.format(ord(self.textarea.get(prevtagchar)),prevtagchar))
+                    self.textarea.delete(prevtagchar)
+                except tk.TclError:
+                    pass
+                    #print('no RX text to backspace over')
             else:
                 #print('port_in = ASCII {:x}'.format(ord(c)))
                 self.textarea.insert(tk.END, c,'rxtext')
@@ -632,6 +645,16 @@ options menu allows you to change the way things are displayed."""
             elif ord(c) == 10:
                 if self.txnl.get() == 'UNIX   ' :
                     self.textarea.insert(tk.END, '\n','txtext')
+            elif ord(c) == 8:
+                try:
+                    prevtagchar = self.textarea.index("txtext.last-1c")
+                    #print('last txchar at {}'.format(prevtagchar))
+                    #print('last char ascii is "{}"'.format(self.textarea.get(prevtagchar)))
+                    #print('delete ascii char{} at index {}'.format(ord(self.textarea.get(prevtagchar)),prevtagchar))
+                    self.textarea.delete(prevtagchar)
+                except tk.TclError:
+                    pass
+                    #print('no TX text to backspace over')
             else:
                 self.textarea.insert(tk.END, c,'txtext')
             self.textarea.see("end")
@@ -654,7 +677,7 @@ options menu allows you to change the way things are displayed."""
 
     def helpabout(self):
         popup_about = tk.Tk()
-        popup_about.wm_title("BillComm - About")
+        popup_about.wm_title("StepComm - About")
         label = tk.Text(popup_about)
         label.insert(tk.END, self.about_txt, 'lefty')
         label.pack(side="top", fill="x", pady=10)
@@ -665,7 +688,7 @@ options menu allows you to change the way things are displayed."""
         popup_about.mainloop()
     def helphelp(self):
         popup_help = tk.Tk()
-        popup_help.wm_title("BillComm - Quick Help")
+        popup_help.wm_title("StepComm - Quick Help")
         label = tk.Text(popup_help)
         label.insert(END,self.help_txt,'lefty')
         label.pack(side="top", fill="x", pady=10)
@@ -677,7 +700,7 @@ options menu allows you to change the way things are displayed."""
  
     def filesave(self):
         snls = [self.send_snl[i].get() for i in range(4)]
-        jdict = {'title':'BillCom: saved settings','time':time.asctime(),
+        jdict = {'title':'StepCom: saved settings','time':time.asctime(),
                'port':self.port_spin.get(),'baud':self.baud_spin.get(),
                'parity':self.parity_spin.get(),'databits':self.databits_spin.get(),
                'stopbits':self.stopbits_spin.get(),'echo':self.echo.get(),
@@ -696,8 +719,8 @@ options menu allows you to change the way things are displayed."""
             file = filedialog.askopenfile(title='Select file for loading',
                 filetypes = (("Settings Files","*.ini"),("all files","*.*")))
             jdict = json.loads(file.read())
-            if jdict['title'] != 'BillCom: saved settings':
-                print("file is not valid billcomm configuration file\n")
+            if jdict['title'] != 'StepComm: saved settings':
+                print("file is not valid Stepcomm configuration file\n")
                 return -1
             self.port_spin.delete(0,"end");self.port_spin.insert(0,jdict['port'])
             self.baud_spin.delete(0,"end");self.baud_spin.insert(0,jdict['baud'])
