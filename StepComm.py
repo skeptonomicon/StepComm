@@ -248,7 +248,7 @@ options menu allows you to change the way things are displayed."""
             height=4,values=self.comslist)
         #self.port_spin=tk.Spinbox(self.port_frame,bg="snow",width=12,
         #                          values=self.comslist, command=self.set_port)
-        self.port_combo.bind("<<ComboboxSelected>>", self.set_port)
+        self.port_combo.bind("<<ComboboxSelected>>", self.set_portparm)
         self.port_combo.bind('<Double-Button-1>', self.scan_port)
         self.port_combo.grid(row=0,column=1,sticky=W)
 
@@ -546,7 +546,7 @@ options menu allows you to change the way things are displayed."""
         self.port_combo.configure(values=self.comslist)
         if len(self.comslist) == 0:
             self.status("No Serial Ports Found!")
-    def set_portparm(self):
+    def set_portparm(self,e):
         self.set_port()
     def port_in(self):
         while self.comport.isOpen():
