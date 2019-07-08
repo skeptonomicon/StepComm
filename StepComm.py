@@ -43,7 +43,7 @@
 # the delays (again, without using sleep()) the txstring routine sets up the data,
 # and the txchar loop outputs a single char and calls itself until the string is 
 # finished. During the transmission of the string, no other string or char can be sent.
- 
+import os.path
 import time
 import tkinter as tk
 from tkinter import ttk
@@ -125,6 +125,8 @@ options menu allows you to change the way things are displayed."""
         self.cols = 80
 
         self.parity_strings = ('NONE','EVEN','ODD','MARK','SPACE')
+        self.bauds=('300','600','1200','2400','4800','9600','14400','19200',
+            '28800','38400','57600','115200')
         self.parity_consts= (serial.PARITY_NONE,serial.PARITY_EVEN,serial.PARITY_ODD,
                         serial.PARITY_MARK,serial.PARITY_SPACE)
         self.databit_strings=('5','6','7','8')
@@ -242,35 +244,53 @@ options menu allows you to change the way things are displayed."""
         self.comslist = [a[0] for a in comports()]
         self.port_label=tk.Label(self.port_frame,text="Port",bg=self.bordcolor,)
         self.port_label.grid(row=0,column=0,sticky=W)
-        self.port_spin=tk.Spinbox(self.port_frame,bg="snow",width=12,
-                                  values=self.comslist, command=self.set_port)
-        self.port_spin.bind('<Double-Button-1>', self.scan_port)
-        self.port_spin.grid(row=0,column=1,sticky=W)
+        self.port_combo=ttk.Combobox(self.port_frame,width=12,
+            height=4,values=self.comslist)
+        #self.port_spin=tk.Spinbox(self.port_frame,bg="snow",width=12,
+        #                          values=self.comslist, command=self.set_port)
+        self.port_combo.bind("<<ComboboxSelected>>", self.set_port)
+        self.port_combo.bind('<Double-Button-1>', self.scan_port)
+        self.port_combo.grid(row=0,column=1,sticky=W)
 
         self.baud_label=tk.Label(self.port_frame,text="Baud",bg=self.bordcolor)
         self.baud_label.grid(row=0,column=2,sticky=W)
-        self.baud_spin=tk.Spinbox(self.port_frame,bg="snow",width=7,
-            values=('300','600','1200','2400','4800','9600','14400','19200',
-            '28800','38400','57600','115200'), command=self.set_portparm)
-        self.baud_spin.grid(row=0,column=3,sticky=W)
+        self.baud_combo=ttk.Combobox(self.port_frame,width=7,
+            height=4,values=self.bauds)
+        self.baud_combo.bind("<<ComboboxSelected>>", self.set_portparm)
+        #self.baud_spin=tk.Spinbox(self.port_frame,bg="snow",width=7,
+        #    values=('300','600','1200','2400','4800','9600','14400','19200',
+        #    '28800','38400','57600','115200'), command=self.set_portparm)
+        self.baud_combo.grid(row=0,column=3,sticky=W)
         
         self.parity_label=tk.Label(self.port_frame,text="Parity",bg=self.bordcolor)
         self.parity_label.grid(row=0,column=4,sticky=W)
-        self.parity_spin=tk.Spinbox(self.port_frame,bg="snow",width=5,
-            values=self.parity_strings, command=self.set_portparm)
-        self.parity_spin.grid(row=0,column=5,sticky=W)
+        self.parity_combo=ttk.Combobox(self.port_frame,width=7,
+            values=self.parity_strings)
+        self.parity_combo.bind("<<ComboboxSelected>>", self.set_portparm)
+        self.parity_combo.grid(row=0,column=5,sticky=W)
+        #self.parity_spin=tk.Spinbox(self.port_frame,bg="snow",width=5,
+        #    values=self.parity_strings, command=self.set_portparm)
+        #self.parity_spin.grid(row=0,column=5,sticky=W)
         
         self.databits_label=tk.Label(self.port_frame,text="Data bits",bg=self.bordcolor)
         self.databits_label.grid(row=0,column=6,sticky=W)
-        self.databits_spin=tk.Spinbox(self.port_frame,bg="snow",width=5,
-             values=self.databit_strings, command=self.set_portparm)
-        self.databits_spin.grid(row=0,column=7,sticky=W)
+        self.databits_combo=ttk.Combobox(self.port_frame,width=3,
+            values=self.databit_strings)
+        self.databits_combo.bind("<<ComboboxSelected>>", self.set_portparm)
+        self.databits_combo.grid(row=0,column=7,sticky=W)
+        #self.databits_spin=tk.Spinbox(self.port_frame,bg="snow",width=5,
+        #     values=self.databit_strings, command=self.set_portparm)
+        #self.databits_spin.grid(row=0,column=7,sticky=W)
         
         self.stopbits_label=tk.Label(self.port_frame,text="Stop bits",bg=self.bordcolor)
         self.stopbits_label.grid(row=0,column=8,sticky=W)
-        self.stopbits_spin=tk.Spinbox(self.port_frame,bg="snow",width=5,
-                            values=self.stopbit_strings, command=self.set_portparm)
-        self.stopbits_spin.grid(row=0,column=9,sticky=W)
+        self.stopbits_combo=ttk.Combobox(self.port_frame,width=3,
+            values=self.stopbit_strings)
+        self.stopbits_combo.bind("<<ComboboxSelected>>", self.set_portparm)
+        self.stopbits_combo.grid(row=0,column=9,sticky=W)
+        #self.stopbits_spin=tk.Spinbox(self.port_frame,bg="snow",width=5,
+        #                    values=self.stopbit_strings, command=self.set_portparm)
+        #self.stopbits_spin.grid(row=0,column=9,sticky=W)
         self.echo_label = tk.Label(self.port_frame,text='Local Echo',bg=self.bordcolor)
         self.echo_label.grid(row=0,column=10,sticky=W)
         self.echo_cbox = tk.Checkbutton(self.port_frame,bg=self.bordcolor,
@@ -282,12 +302,16 @@ options menu allows you to change the way things are displayed."""
         self.newline_frame.grid_columnconfigure(3, weight = 1)
 
         self.rxnl_lab = tk.Label(self.newline_frame,text="RX newlines",
-                bg=self.bordcolor,font=self.controlFont)
+            bg=self.bordcolor,font=self.controlFont)
         self.rxnl_lab.grid(row=0,column=0,sticky=W)
-        self.rxnl_spin=tk.Spinbox(self.newline_frame,bg="snow",width=10,
-                                  textvariable=self.rxnl,values=self.nl_styles,
-                                  command=self.update_newline)
-        self.rxnl_spin.grid(row=0,column=1,sticky=W)
+        self.rxnl_combo=ttk.Combobox(self.newline_frame,width=10,
+            textvariable=self.rxnl,values=self.nl_styles)
+        self.rxnl_combo.bind("<<ComboboxSelected>>", self.update_newline)
+        self.rxnl_combo.grid(row=0,column=1,sticky=W)
+        #self.rxnl_spin=tk.Spinbox(self.newline_frame,bg="snow",width=10,
+        #                          textvariable=self.rxnl,values=self.nl_styles,
+        #                          command=self.update_newline)
+        #self.rxnl_spin.grid(row=0,column=1,sticky=W)
         self.rxnlos_lab = tk.Label(self.newline_frame,text=self.nl_desc[0],width=10,
                 bg=self.bordcolor,font=self.controlFont)
         self.rxnlos_lab.grid(row=0,column=2,sticky=E+W)
@@ -296,10 +320,14 @@ options menu allows you to change the way things are displayed."""
         self.txnl_lab = tk.Label(self.newline_frame,text="TX newlines : ",
                 bg=self.bordcolor,font=self.controlFont)
         self.txnl_lab.grid(row=0,column=4,sticky=E)
-        self.txnl_spin=tk.Spinbox(self.newline_frame,bg="snow",width=10,
-                                  textvariable=self.txnl,values=self.nl_styles,
-                                  command=self.update_newline)
-        self.txnl_spin.grid(row=0,column=5,sticky=E)
+        self.txnl_combo=ttk.Combobox(self.newline_frame,width=10,
+            textvariable=self.txnl,values=self.nl_styles)
+        self.txnl_combo.bind("<<ComboboxSelected>>", self.update_newline)
+        self.txnl_combo.grid(row=0,column=5,sticky=E)
+        #self.txnl_spin=tk.Spinbox(self.newline_frame,bg="snow",width=10,
+        #                          textvariable=self.txnl,values=self.nl_styles,
+        #                          command=self.update_newline)
+        #self.txnl_spin.grid(row=0,column=5,sticky=E)
         self.txnlos_lab = tk.Label(self.newline_frame,text=self.nl_desc[0],width=10,
                 bg=self.bordcolor,font=self.controlFont)
         self.txnlos_lab.grid(row=0,column=6,sticky=E+W)
@@ -321,10 +349,10 @@ options menu allows you to change the way things are displayed."""
         
         
         #set all the default port values
-        self.baud_spin.delete(0,"end");self.baud_spin.insert(0,'115200')
-        self.parity_spin.delete(0,"end");self.parity_spin.insert(0,'NONE')
-        self.databits_spin.delete(0,"end");self.databits_spin.insert(0,'8')
-        self.stopbits_spin.delete(0,"end");self.stopbits_spin.insert(0,'1')
+        self.baud_combo.delete(0,"end");self.baud_combo.insert(0,'115200')
+        self.parity_combo.delete(0,"end");self.parity_combo.insert(0,'NONE')
+        self.databits_combo.delete(0,"end");self.databits_combo.insert(0,'8')
+        self.stopbits_combo.delete(0,"end");self.stopbits_combo.insert(0,'1')
         self.echo.set('ON')
 
         ################################
@@ -432,10 +460,14 @@ options menu allows you to change the way things are displayed."""
         self.root.after(50, self.set_port)
         self.root.after(100, self.port_in)
         self.root.protocol("WM_DELETE_WINDOW", self.exitapp)
+        #parse the command line arguments to see if an init file was passed
+        if len(sys.argv) >1 and os.path.isfile(sys.argv[1]):
+            f=open(sys.argv[1])
+            self.fileparse(f)
         #self.helpabout()
     def status(self,t):
         self.status_text.set(t)
-    def update_newline(self):
+    def update_newline(self,a):
         #t=self.nl_desc[self.nl_styles.index(self.txnl.get())]
         #print("update_newline TX is {:s}".format(t))
         self.txnlos_lab.configure(text=self.nl_desc[self.nl_styles.index(self.txnl.get())])
@@ -488,14 +520,14 @@ options menu allows you to change the way things are displayed."""
         print ("capture file not implemented yet")
     def set_port(self):
 
-        port = self.port_spin.get()
-        bs = self.baud_spin.get()
+        port = self.port_combo.get()
+        bs = self.baud_combo.get()
         bv = int(bs)
-        ps = self.parity_spin.get()
+        ps = self.parity_combo.get()
         pv = self.parity_consts[self.parity_strings.index(ps)]
-        ds = self.databits_spin.get()
+        ds = self.databits_combo.get()
         dv = self.databit_consts[self.databit_strings.index(ds)]
-        ss = self.stopbits_spin.get()
+        ss = self.stopbits_combo.get()
         sv = self.stopbit_consts[self.stopbit_strings.index(ss)]
         print('port settings are now {:s},{:s},{:s},{:s},{:s}'.format(
                     port,bs,ps,ds,ss))
@@ -507,11 +539,11 @@ options menu allows you to change the way things are displayed."""
                     stopbits=sv, parity=pv, timeout=0)
             self.status('port {:s},{:s},{:s},{:s},{:s}'.format(port,bs,ps,ds,ss))
         except:
-            self.status("Failed to open port{:s}".format(self.port_spin.get()))
+            self.status("Failed to open port{:s}".format(self.port_combo.get()))
     def scan_port(self,event):
         #get a fresh list of comports every time the port is updated
         self.comslist = [a[0] for a in comports()]
-        self.port_spin.configure(values=self.comslist)
+        self.port_combo.configure(values=self.comslist)
         if len(self.comslist) == 0:
             self.status("No Serial Ports Found!")
     def set_portparm(self):
@@ -700,33 +732,40 @@ options menu allows you to change the way things are displayed."""
  
     def filesave(self):
         snls = [self.send_snl[i].get() for i in range(4)]
-        jdict = {'title':'StepCom: saved settings','time':time.asctime(),
-               'port':self.port_spin.get(),'baud':self.baud_spin.get(),
-               'parity':self.parity_spin.get(),'databits':self.databits_spin.get(),
-               'stopbits':self.stopbits_spin.get(),'echo':self.echo.get(),
+        jdict = {'title':'StepComm: saved settings','time':time.asctime(),
+               'port':self.port_combo.get(),'baud':self.baud_combo.get(),
+               'parity':self.parity_combo.get(),'databits':self.databits_combo.get(),
+               'stopbits':self.stopbits_combo.get(),'echo':self.echo.get(),
                'sendhist':self.send_hist,'send_macro':self.macro_text,'send_snls':snls,
                'rxnl':self.rxnl.get(),'txnl':self.txnl.get()}
-        #try:
         file = filedialog.asksaveasfile(mode='w',title='Select file for saving',
                 filetypes = (("Settings Files","*.ini"),("all files","*.*")))
             #file = open(fn,'w')
-        file.write(json.dumps(jdict))
-        #except:
-        #    sys.exit("Error writing file " + file.name)
-   
+        if file == None:
+            return -1
+        try:
+            file.write(json.dumps(jdict))
+            self.status("saved settings to " + file.name)
+        except:
+            self.status('failed to save settings to ' + file.name)            
     def fileload(self):
-        #try:
-            file = filedialog.askopenfile(title='Select file for loading',
-                filetypes = (("Settings Files","*.ini"),("all files","*.*")))
+        file = filedialog.askopenfile(title='Select file for loading',
+            filetypes = (("Settings Files","*.ini"),("all files","*.*")))
+        self.fileparse(file)
+    def fileparse(self,file):
+        try:
+            #print('file is {}'.format(file))
+            if file == None:
+                return -1
             jdict = json.loads(file.read())
             if jdict['title'] != 'StepComm: saved settings':
                 print("file is not valid Stepcomm configuration file\n")
                 return -1
-            self.port_spin.delete(0,"end");self.port_spin.insert(0,jdict['port'])
-            self.baud_spin.delete(0,"end");self.baud_spin.insert(0,jdict['baud'])
-            self.parity_spin.delete(0,"end");self.parity_spin.insert(0,jdict['parity'])
-            self.databits_spin.delete(0,"end");self.databits_spin.insert(0,jdict['databits'])
-            self.stopbits_spin.delete(0,"end");self.stopbits_spin.insert(0,jdict['stopbits'])
+            self.port_combo.delete(0,"end");self.port_combo.insert(0,jdict['port'])
+            self.baud_combo.delete(0,"end");self.baud_combo.insert(0,jdict['baud'])
+            self.parity_combo.delete(0,"end");self.parity_combo.insert(0,jdict['parity'])
+            self.databits_combo.delete(0,"end");self.databits_combo.insert(0,jdict['databits'])
+            self.stopbits_combo.delete(0,"end");self.stopbits_combo.insert(0,jdict['stopbits'])
             self.echo.set(jdict['echo'])
             self.set_port()
             self.send_hist=jdict['sendhist']
@@ -741,9 +780,9 @@ options menu allows you to change the way things are displayed."""
             self.macroedit.insert("1.0",self.macro_text[self.macro_sel.get()-1])
             self.rxnl.set(jdict['rxnl'])
             self.txnl.set(jdict['txnl'])
-            
-        #except:
-        #    print('failed to read to file "' + file.name + '"\n')
+            self.status("loaded settings from " + file.name)
+        except:
+            self.status('failed to load settings from ' + file.name)            
     
     def exitapp(self):
         try:
