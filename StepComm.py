@@ -628,12 +628,24 @@ options menu allows you to change the way things are displayed."""
         self.macroedit.insert("1.0",self.macro_text[self.macro_sel.get()-1])
     def typed_char(self,event):
         if len(event.char) == 1:
-            #if txstr_idx != 0:
-            #    print('typed char dropped during txstr')
-            #else:
-                #print("echo is {:s}".format(self.echo.get()))
-                #sys.stdout.flush()
-            self.charout(event.char)
+            #print ('character {}'.format(ord(event.char)))
+            if ord(event.char) == 3:
+                #ctrl-C copy of selected text
+                try:
+                    txt = self.textarea.selection_get()
+                    self.clipboard_clear()
+                    self.clipboard_append(txt)
+                except:
+                    self.status('clipboard copy failed')
+            elif ord(event.char) == 22:
+                #ctrl-C copy of selected text
+                try:
+                    txt = self.clipboard_get()
+                    self.stringout(txt,1)
+                except:
+                    self.status('clipboard paste failed')
+            else:
+                self.charout(event.char)
         return("break")
     def stringout(self,txt,snl):
         if self.txbuf != '':
