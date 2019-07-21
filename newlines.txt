@@ -1,0 +1,23 @@
+Newline handling in stepcomm:
+Handle these newline cases:
+    1. characters typed in keyboard and sent out comport and echoed to screen
+    2. characters sent from send commands, or files sent out comport and echoed on screen
+    3. characters recived from port and written to screen and written to capture files
+    
+Use on these file systems:
+    1. windows : CR/LF
+    2. old mac : CR
+    3. Unixes : LF
+    4. Auto : RX uses LF, CR, CR/LF, or LF/CR, TX is CR/LF
+    5. Natural : TX uses the keyboard key (OS dependant), RX follows AUTO
+   
+
+Comport input is always handled automatically, LF, CRLF, CR, LFCR are all converted to \n for the screen and capture file.
+The capture file's \n is converted by python to the line end pattern for the host system's OS.
+keyboard input treats both LF and CR as an ENTER/RETURN key press, which get output to the port based on the TXNL setting.
+Sent files have CR, CRLF, LF, LFCR sent to the comport based on the TXNL setting.
+TXNL determines the sent file and keyboard input newline sequence sent out out to the comport as follows:
+    windows => CRLF
+    Unixes => LF
+    Old Mac => CR
+    auto => repeats last comport RX NL sequence

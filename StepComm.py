@@ -135,24 +135,25 @@ options menu allows you to change the way things are displayed."""
         self.stopbit_consts=(serial.STOPBITS_ONE,serial.STOPBITS_ONE_POINT_FIVE,serial.STOPBITS_TWO)
         self.echo = tk.StringVar()
         self.comport = serial.Serial()
-        self.newline_file = '\r\n'
-        self.newline_tx = '\r\n'
-        self.newline_rx = '\r\n'
-        self.nl_styles = ('AUTO   ','WINDOWS','UNIX   ','OLD MAC','NATURAL')
-        self.nl_desc = ('Detect NL',r'NL=\r\n',r'NL=\n',r'NL=\r','As typed')
-        self.rxnl=tk.StringVar()
-        self.rxnl.set(self.nl_styles[0])
+        #self.newline_file = '\r\n'
+        #self.newline_tx = '\r\n'
+        #self.newline_rx = '\r\n'
+        self.nl_styles = ('WINDOWS','UNIX   ','OLD MAC','AUTO   ')
+        self.nl_desc = (r'NL=\r\n',r'NL=\n',r'NL=\r','Mimic RX')
+        #self.rxnl=tk.StringVar()
+        #self.rxnl.set(self.nl_styles[0])
         self.txnl=tk.StringVar()
         self.txnl.set(self.nl_styles[0])
         self.fnnl=tk.StringVar()
         self.fnnl.set(self.nl_styles[1])
-        self.txnlcr = tk.IntVar()
-        self.txnlcr.set(1)
-        self.txnllf = tk.IntVar()
-        self.txnllf.set(1)
-        #self.txnl_lastchar = tk.StringVar()
+        #self.txnlcr = tk.IntVar()
+        #self.txnlcr.set(1)
+        #self.txnllf = tk.IntVar()
+        #self.txnllf.set(1)
+        self.txnl_autostyle = "WINDOWS"
         #self.txnl_lastchar.set('NO')
-        self.rxnl_ignore =' '
+        self.txnl_ignore = ' '
+        self.rxnl_ignore = ' '
         self.send_cnt = 4
         self.send_text = [tk.StringVar() for i in range(self.send_cnt)]
         self.send_hist = [[""] for i in range(self.send_cnt)]
@@ -301,49 +302,49 @@ options menu allows you to change the way things are displayed."""
         self.newline_frame.grid(row=3,column=1,sticky=E+W,columnspan=10)
         self.newline_frame.grid_columnconfigure(3, weight = 1)
 
-        self.rxnl_lab = tk.Label(self.newline_frame,text="RX newlines",
-            bg=self.bordcolor,font=self.controlFont)
-        self.rxnl_lab.grid(row=0,column=0,sticky=W)
-        self.rxnl_combo=ttk.Combobox(self.newline_frame,width=10,
-            textvariable=self.rxnl,values=self.nl_styles)
-        self.rxnl_combo.bind("<<ComboboxSelected>>", self.update_newline)
-        self.rxnl_combo.grid(row=0,column=1,sticky=W)
+        #self.rxnl_lab = tk.Label(self.newline_frame,text="RX newlines",
+        #    bg=self.bordcolor,font=self.controlFont)
+        #self.rxnl_lab.grid(row=0,column=0,sticky=W)
+        #self.rxnl_combo=ttk.Combobox(self.newline_frame,width=10,
+        #    textvariable=self.rxnl,values=self.nl_styles)
+        #self.rxnl_combo.bind("<<ComboboxSelected>>", self.update_newline)
+        #self.rxnl_combo.grid(row=0,column=1,sticky=W)
         #self.rxnl_spin=tk.Spinbox(self.newline_frame,bg="snow",width=10,
         #                          textvariable=self.rxnl,values=self.nl_styles,
         #                          command=self.update_newline)
         #self.rxnl_spin.grid(row=0,column=1,sticky=W)
-        self.rxnlos_lab = tk.Label(self.newline_frame,text=self.nl_desc[0],width=10,
-                bg=self.bordcolor,font=self.controlFont)
-        self.rxnlos_lab.grid(row=0,column=2,sticky=E+W)
+        #self.rxnlos_lab = tk.Label(self.newline_frame,text=self.nl_desc[0],width=10,
+        #        bg=self.bordcolor,font=self.controlFont)
+        #self.rxnlos_lab.grid(row=0,column=2,sticky=E+W)
         tk.Frame(self.newline_frame,width=20,bg=self.bordcolor).grid(row=0,column=3,
                 sticky=E+W)        
         self.txnl_lab = tk.Label(self.newline_frame,text="TX newlines : ",
                 bg=self.bordcolor,font=self.controlFont)
-        self.txnl_lab.grid(row=0,column=4,sticky=E)
+        self.txnl_lab.grid(row=0,column=0,sticky=E)
         self.txnl_combo=ttk.Combobox(self.newline_frame,width=10,
             textvariable=self.txnl,values=self.nl_styles)
         self.txnl_combo.bind("<<ComboboxSelected>>", self.update_newline)
-        self.txnl_combo.grid(row=0,column=5,sticky=E)
+        self.txnl_combo.grid(row=0,column=1,sticky=E)
         #self.txnl_spin=tk.Spinbox(self.newline_frame,bg="snow",width=10,
         #                          textvariable=self.txnl,values=self.nl_styles,
         #                          command=self.update_newline)
         #self.txnl_spin.grid(row=0,column=5,sticky=E)
         self.txnlos_lab = tk.Label(self.newline_frame,text=self.nl_desc[0],width=10,
                 bg=self.bordcolor,font=self.controlFont)
-        self.txnlos_lab.grid(row=0,column=6,sticky=E+W)
+        self.txnlos_lab.grid(row=0,column=2,sticky=E)
 
-        self.txdelay_frame = tk.Frame(self.port_frame,height=15,bg=self.bordcolor)
-        self.txdelay_frame.grid(row=4,column=1,sticky=W,columnspan=10)
-        tk.Label(self.txdelay_frame,text="Char Delay",
-                bg=self.bordcolor,font=self.controlFont).grid(row=0,column=0,sticky=W)
-        self.chardly_spin=tk.Spinbox(self.txdelay_frame,bg="snow",width=4,
+        #self.txdelay_frame = tk.Frame(self.port_frame,height=15,bg=self.bordcolor)
+        #self.txdelay_frame.grid(row=4,column=1,sticky=W,columnspan=10)
+        tk.Label(self.newline_frame,text="Char Delay",
+                bg=self.bordcolor,font=self.controlFont).grid(row=0,column=4,sticky=W)
+        self.chardly_spin=tk.Spinbox(self.newline_frame,bg="snow",width=4,
                 from_=0,to=100,textvariable=self.char_delay)
-        self.chardly_spin.grid(row=0,column=1,sticky=W)
-        tk.Label(self.txdelay_frame,text="ms     Line Delay",
-                bg=self.bordcolor,font=self.controlFont).grid(row=0,column=2,sticky=W)
-        self.linedly_spin=tk.Spinbox(self.txdelay_frame,bg="snow",width=4,
+        self.chardly_spin.grid(row=0,column=5,sticky=W)
+        tk.Label(self.newline_frame,text="ms     Line Delay",
+                bg=self.bordcolor,font=self.controlFont).grid(row=0,column=6,sticky=W)
+        self.linedly_spin=tk.Spinbox(self.newline_frame,bg="snow",width=4,
                 from_=0,to=1000,increment=10,textvariable=self.line_delay)
-        self.linedly_spin.grid(row=0,column=3,sticky=W)
+        self.linedly_spin.grid(row=0,column=7,sticky=W)
         
         
         
@@ -457,6 +458,9 @@ options menu allows you to change the way things are displayed."""
         ##         Finish Init         ##
         #################################
         self.hide_tabs()
+        self.scan_port('<Double-Button-1>')
+        if len(self.comslist) != 0:
+            self.port_combo.set(self.comslist[0])
         self.root.after(50, self.set_port)
         self.root.after(100, self.port_in)
         self.root.protocol("WM_DELETE_WINDOW", self.exitapp)
@@ -473,7 +477,7 @@ options menu allows you to change the way things are displayed."""
         self.txnlos_lab.configure(text=self.nl_desc[self.nl_styles.index(self.txnl.get())])
         #t=self.nl_desc[self.nl_styles.index(self.rxnl.get())]
         #print("update_newline RX is {:s}".format(t))
-        self.rxnlos_lab.configure(text=self.nl_desc[self.nl_styles.index(self.rxnl.get())])
+        #self.rxnlos_lab.configure(text=self.nl_desc[self.nl_styles.index(self.rxnl.get())])
     def hide_tabs(self):
         #print("Hide all tabs")
         self.opt_frame.grid_remove()
@@ -555,49 +559,29 @@ options menu allows you to change the way things are displayed."""
                 break
             #else:
                 #print('port_in: char = {:02x}, rxnl style is {:s}'.format(ord(c),self.rxnl.get())) 
-            if c == b'\n' :
+            if ord(c) == 10 :
                 #print('CHAR=LF')
-                if self.rxnl.get() == 'AUTO   ' :
-                    if self.rxnl_ignore=='LF':
-                        #print('AUTO, ignored LF')
-                        self.rxnl_ignore = ' '
-                    else:
-                        self.textarea.insert(tk.END, "\n",'rxtext')
-                        #print('AUTO, used NL=LF')
-                        self.rxnl_ignore = 'CR'
-                elif self.rxnl.get() == "OLD MAC":
-                    #print('OLD MAC, ignored LF')
+                if self.rxnl_ignore=='LF':
+                    #print('{} LF, ignored LF'.format(self.rxnl.get()))
                     self.rxnl_ignore = ' '
-                elif self.rxnl.get() == "WINDOWS":
-                    #print('Windows, ignored LF')
-                    self.rxnl_ignore = ' '
+                    self.txnl_autostyle = "WINDOWS"  #save auto txnl style
                 else:
-                    #print('Linux, used NL=LF')
+                    #print('{} LF, used LF'.format(self.rxnl.get())
                     self.textarea.insert(tk.END, "\n",'rxtext')
+                    self.rxnl_ignore = 'CR'                    
+            elif ord(c) == 13:
+                if self.rxnl_ignore=='CR':
+                    #print('{} CR, ignored CR'.format(self.rxnl.get()))
                     self.rxnl_ignore = ' '
-            elif c == b'\r':
-                #print('CHAR=CR')
-                if self.rxnl.get() == 'AUTO   ' :
-                    if self.rxnl_ignore=='CR':
-                        #print('AUTO, ignored CR')
-                        self.rxnl_ignore = ' '
-                    else:
-                        self.textarea.insert(tk.END, "\n",'rxtext')
-                        #print('AUTO, used NL=CR')
-                        self.rxnl_ignore = 'LF'
-                elif self.rxnl.get() == "OLD MAC":
-                    #print('OLD MAC, used CR')
+                    self.txnl_autostyle = "WINDOWS"  #save auto txnl style
+
+                else:
                     self.textarea.insert(tk.END, "\n",'rxtext')
-                    self.rxnl_ignore = ' '
-                elif self.rxnl.get() == "WINDOWS":
-                    #print('Windows, used CR')
+                    #print('{} CR, used CR'.format(self.rxnl.get()))
                     self.rxnl_ignore = 'LF'
-                    self.textarea.insert(tk.END, "\n",'rxtext')
-                else:
-                    #print('Linux, ignored CR')
-                    self.rxnl_ignore = ' '
             elif c == b'\b':
                 #print('RX CHAR=BS')
+                self.rxnl_ignore = ' '
                 try:
                     prevtagchar = self.textarea.index("rxtext.last-1c")
                     #print('last rxchar at {}'.format(prevtagchar))
@@ -610,8 +594,12 @@ options menu allows you to change the way things are displayed."""
             else:
                 #print('port_in = ASCII {:x}'.format(ord(c)))
                 self.textarea.insert(tk.END, c,'rxtext')
+                #record the auto detected TX NL style
+                if self.rxnl_ignore == 'CR':
+                    self.txnl_autostyle = "OLD MAC"
+                elif self.rxnl_ignore == 'LF':
+                    self.txnl_autostyle = "UNIX   "
                 self.rxnl_ignore = ' '
-
             self.textarea.see("end")
         self.root.after(10,self.port_in)
         #self.after(100,self.port_in)
@@ -671,13 +659,25 @@ options menu allows you to change the way things are displayed."""
             self.txptr=0
     def charout(self,c):
         if self.echo.get() == 'ON':
-            if ord(c) == 13 :
-                if self.txnl.get() != 'UNIX   ' :
+            if ord(c) == 10:
+                #print('CHAR=LF')
+                if self.txnl_ignore=='LF':
+                    #print('{} LF, ignored LF'.format(self.rxnl.get()))
+                    self.txnl_ignore = ' '
+                else:
+                    #print('{} LF, used LF'.format(self.rxnl.get())
                     self.textarea.insert(tk.END, '\n','txtext')
-            elif ord(c) == 10:
-                if self.txnl.get() == 'UNIX   ' :
-                    self.textarea.insert(tk.END, '\n','txtext')
+                    self.txnl_ignore = 'CR'
+            elif ord(c) == 13:
+                if self.txnl_ignore=='CR':
+                    #print('{} CR, ignored CR'.format(self.rxnl.get()))
+                    self.txnl_ignore = ' '
+                else:
+                    self.textarea.insert(tk.END, "\n",'rxtext')
+                    #print('{} CR, used CR'.format(self.rxnl.get()))
+                    self.txnl_ignore = 'LF'
             elif ord(c) == 8:
+                self.txnl_ignore = ' '
                 try:
                     prevtagchar = self.textarea.index("txtext.last-1c")
                     #print('last txchar at {}'.format(prevtagchar))
@@ -688,22 +688,34 @@ options menu allows you to change the way things are displayed."""
                     pass
                     #print('no TX text to backspace over')
             else:
+                self.txnl_ignore = ' '
                 self.textarea.insert(tk.END, c,'txtext')
             self.textarea.see("end")
         if self.comport.isOpen():
-            if ord(c) == 13 :
-                if self.txnl.get() == 'WINDOWS':
-                    self.comport.write('\r'.encode('utf-8'))
-                    #print('charout = CR')
-                    self.comport.write('\n'.encode('utf-8'))
-                    #print('charout = LF')
-                elif self.txnl.get() != 'UNIX   ':
-                    self.comport.write('\r'.encode('utf-8'))
-                    #print('charout = CR')
-            elif ord(c) == 10 :
-                if self.txnl.get() != "UNIX   " or self.txnl.get() == "AUTO   " :
-                    self.comport.write('\n'.encode('utf-8'))
-                    #print('charout = LF')
+            if ord(c) == 10 :
+                if self.txnl_ignore=='LF':
+                    self.txnl_ignore = ' '
+                else:
+                    self.txnl_ignore = 'CR'
+                    if self.txnl.get() == "WINDOWS" or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="WINDOWS"):
+                        self.comport.write('\r'.encode('utf-8'))
+                        self.comport.write('\n'.encode('utf-8'))
+                    elif self.txnl.get() == 'UNIX   ' or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="UNIX   "):
+                        self.comport.write('\n'.encode('utf-8'))
+                    elif self.txnl.get() == 'OLD MAC' or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="OLD MAC"):
+                        self.comport.write('\r'.encode('utf-8'))
+            elif ord(c) == 13 :
+                if self.txnl_ignore=='CR':
+                    self.txnl_ignore = ' '
+                else:
+                    self.txnl_ignore = 'LF'
+                    if self.txnl.get() == "WINDOWS" or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="WINDOWS"):
+                        self.comport.write('\r'.encode('utf-8'))
+                        self.comport.write('\n'.encode('utf-8'))
+                    elif self.txnl.get() == 'UNIX   ' or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="UNIX   "):
+                        self.comport.write('\n'.encode('utf-8'))
+                    elif self.txnl.get() == 'OLD MAC' or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="OLD MAC"):
+                        self.comport.write('\r'.encode('utf-8'))
             else:
                 self.comport.write(c.encode('utf-8'))
 
@@ -737,14 +749,15 @@ options menu allows you to change the way things are displayed."""
                'parity':self.parity_combo.get(),'databits':self.databits_combo.get(),
                'stopbits':self.stopbits_combo.get(),'echo':self.echo.get(),
                'sendhist':self.send_hist,'send_macro':self.macro_text,'send_snls':snls,
-               'rxnl':self.rxnl.get(),'txnl':self.txnl.get()}
+               'txnl':self.txnl.get(),'txnl_autostyle':self.txnl_autostyle}
+        txt = json.dumps(jdict)
         file = filedialog.asksaveasfile(mode='w',title='Select file for saving',
-                filetypes = (("Settings Files","*.ini"),("all files","*.*")))
+                filetypes = (("Config Files","*.ini"),("all files","*.*")))
             #file = open(fn,'w')
         if file == None:
             return -1
         try:
-            file.write(json.dumps(jdict))
+            file.write(txt)
             self.status("saved settings to " + file.name)
         except:
             self.status('failed to save settings to ' + file.name)            
@@ -753,36 +766,46 @@ options menu allows you to change the way things are displayed."""
             filetypes = (("Settings Files","*.ini"),("all files","*.*")))
         self.fileparse(file)
     def fileparse(self,file):
+        #print('file is {}'.format(file))
+        if file == None:
+            self.status('Bad file name {}'.format(file.name))
+            #print('Bad file name {}'.format(file.name))
+            return -1
+        txt = file.read()
+        if len(txt) == 0:
+            self.status('Empty file ' + file.name)            
+            #print('Empty file ' + file.name)
+            return -1
         try:
-            #print('file is {}'.format(file))
-            if file == None:
-                return -1
-            jdict = json.loads(file.read())
-            if jdict['title'] != 'StepComm: saved settings':
-                print("file is not valid Stepcomm configuration file\n")
-                return -1
-            self.port_combo.delete(0,"end");self.port_combo.insert(0,jdict['port'])
-            self.baud_combo.delete(0,"end");self.baud_combo.insert(0,jdict['baud'])
-            self.parity_combo.delete(0,"end");self.parity_combo.insert(0,jdict['parity'])
-            self.databits_combo.delete(0,"end");self.databits_combo.insert(0,jdict['databits'])
-            self.stopbits_combo.delete(0,"end");self.stopbits_combo.insert(0,jdict['stopbits'])
-            self.echo.set(jdict['echo'])
-            self.set_port()
-            self.send_hist=jdict['sendhist']
-            for i in range(len(self.send_hist)):
-                self.send_combo[i]['values'] = self.send_hist[i]
-            snls = jdict['send_snls']
-            [self.send_snl[i].set(snls[i]) for i in range(len(snls))]
-            self.macro_sel.set(1)
-            self.macro_oldsel = 1
-            self.macro_text=jdict['send_macro']
-            self.macroedit.delete("1.0", END) 
-            self.macroedit.insert("1.0",self.macro_text[self.macro_sel.get()-1])
-            self.rxnl.set(jdict['rxnl'])
-            self.txnl.set(jdict['txnl'])
-            self.status("loaded settings from " + file.name)
+            jdict = json.loads(txt)
         except:
-            self.status('failed to load settings from ' + file.name)            
+            #print('failed to load json data from ' + file.name)
+            self.status('failed to load json data from ' + file.name)            
+            return -1
+        if jdict['title'] != 'StepComm: saved settings':
+            #print('file ' + file.name + ' is not valid Stepcomm ini file')
+            self.status('file ' + file.name + ' is not valid Stepcomm ini file')
+            return -1
+        self.port_combo.delete(0,"end");self.port_combo.insert(0,jdict['port'])
+        self.baud_combo.delete(0,"end");self.baud_combo.insert(0,jdict['baud'])
+        self.parity_combo.delete(0,"end");self.parity_combo.insert(0,jdict['parity'])
+        self.databits_combo.delete(0,"end");self.databits_combo.insert(0,jdict['databits'])
+        self.stopbits_combo.delete(0,"end");self.stopbits_combo.insert(0,jdict['stopbits'])
+        self.echo.set(jdict['echo'])
+        self.set_port()
+        self.send_hist=jdict['sendhist']
+        for i in range(len(self.send_hist)):
+            self.send_combo[i]['values'] = self.send_hist[i]
+        snls = jdict['send_snls']
+        [self.send_snl[i].set(snls[i]) for i in range(len(snls))]
+        self.macro_sel.set(1)
+        self.macro_oldsel = 1
+        self.macro_text=jdict['send_macro']
+        self.macroedit.delete("1.0", END) 
+        self.macroedit.insert("1.0",self.macro_text[self.macro_sel.get()-1])
+        self.txnl.set(jdict['txnl'])
+        self.txnl_autostyle = jdict['txnl_autostyle']
+        self.status("loaded settings from " + file.name)
     
     def exitapp(self):
         try:
