@@ -540,7 +540,7 @@ options menu allows you to change the way things are displayed."""
             self.comport.close()
         try:
             self.comport = serial.Serial(port=port,baudrate=bv,bytesize=dv,
-                    stopbits=sv, parity=pv, timeout=0)
+                    stopbits=sv, parity=pv, timeout=0, write_timeout=0.2)
             self.status('port {:s},{:s},{:s},{:s},{:s}'.format(port,bs,ps,ds,ss))
         except:
             self.status("Failed to open port{:s}".format(self.port_combo.get()))
@@ -630,7 +630,7 @@ options menu allows you to change the way things are displayed."""
         if len(event.char) == 1:
             #print ('character {}'.format(ord(event.char)))
             if ord(event.char) == 3:
-                #ctrl-C copy of selected text
+                #ctrl-C copy of selected text to clipboard
                 try:
                     txt = self.textarea.selection_get()
                     self.clipboard_clear()
@@ -638,7 +638,7 @@ options menu allows you to change the way things are displayed."""
                 except:
                     self.status('clipboard copy failed')
             elif ord(event.char) == 22:
-                #ctrl-C copy of selected text
+                #ctrl-v paste text from clipboard
                 try:
                     txt = self.clipboard_get()
                     self.stringout(txt,1)
@@ -662,7 +662,7 @@ options menu allows you to change the way things are displayed."""
             c= self.txbuf[self.txptr]
             self.charout(c)
             self.txptr += 1
-            if ord(c) == 13 or ord(c) == 10:
+            if ord(c) == '\n':
                 self.root.after(self.line_delay.get(),self.stringloop)
             else:
                 self.root.after(self.char_delay.get(),self.stringloop)
@@ -670,66 +670,63 @@ options menu allows you to change the way things are displayed."""
             self.txbuf=''
             self.txptr=0
     def charout(self,c):
+        #called from stringout/stringloop or typedchar, all line endings are already '\n' except for paste
+        if c == '\n' or c == '\r':
+            #print('CHAR=\\r or \\n')
+            if self.txnl_ignore=='LF':
+                #print('{} LF, ignored LF'.format(self.rxnl.get()))
+                self.txnl_ignore = ' '
+            else:
+                #print('{} LF, used LF'.format(self.rxnl.get())
+                self.echochar('\n')
+                self.comnewline()
+                self.txnl_ignore = 'CR'
+        elif c == '\r':
+            if self.txnl_ignore=='CR':
+                #print('{} CR, ignored CR'.format(self.rxnl.get()))
+                self.txnl_ignore = ' '
+            else:
+                #print('{} CR, used CR'.format(self.rxnl.get()))
+                self.echochar('\n')
+                self.comnewline()
+                self.txnl_ignore = 'LF'
+        elif ord(c) == 8:
+            self.txnl_ignore = ' '
+            self.echobackspace()
+            self.comchar(c)
+        else:
+            self.txnl_ignore = ' '
+            self.echochar(c)
+            self.comchar(c)
+        self.textarea.see("end")
+    def echochar(self,c):
         if self.echo.get() == 'ON':
-            if ord(c) == 10:
-                #print('CHAR=LF')
-                if self.txnl_ignore=='LF':
-                    #print('{} LF, ignored LF'.format(self.rxnl.get()))
-                    self.txnl_ignore = ' '
-                else:
-                    #print('{} LF, used LF'.format(self.rxnl.get())
-                    self.textarea.insert(tk.END, '\n','txtext')
-                    self.txnl_ignore = 'CR'
-            elif ord(c) == 13:
-                if self.txnl_ignore=='CR':
-                    #print('{} CR, ignored CR'.format(self.rxnl.get()))
-                    self.txnl_ignore = ' '
-                else:
-                    self.textarea.insert(tk.END, "\n",'rxtext')
-                    #print('{} CR, used CR'.format(self.rxnl.get()))
-                    self.txnl_ignore = 'LF'
-            elif ord(c) == 8:
-                self.txnl_ignore = ' '
-                try:
-                    prevtagchar = self.textarea.index("txtext.last-1c")
-                    #print('last txchar at {}'.format(prevtagchar))
-                    #print('last char ascii is "{}"'.format(self.textarea.get(prevtagchar)))
-                    #print('delete ascii char{} at index {}'.format(ord(self.textarea.get(prevtagchar)),prevtagchar))
-                    self.textarea.delete(prevtagchar)
-                except tk.TclError:
-                    pass
-                    #print('no TX text to backspace over')
-            else:
-                self.txnl_ignore = ' '
-                self.textarea.insert(tk.END, c,'txtext')
-            self.textarea.see("end")
+            self.textarea.insert(tk.END, c,'txtext')
+    def echobackspace(self):
+        if self.echo.get() == 'ON':
+            try:
+                prevtagchar = self.textarea.index("txtext.last-1c")
+                #print('last txchar at {}'.format(prevtagchar))
+                #print('last char ascii is "{}"'.format(self.textarea.get(prevtagchar)))
+                #print('delete ascii char{} at index {}'.format(ord(self.textarea.get(prevtagchar)),prevtagchar))
+                self.textarea.delete(prevtagchar)
+            except tk.TclError:
+                pass
+    def comchar(self,c):
         if self.comport.isOpen():
-            if ord(c) == 10 :
-                if self.txnl_ignore=='LF':
-                    self.txnl_ignore = ' '
-                else:
-                    self.txnl_ignore = 'CR'
-                    if self.txnl.get() == "WINDOWS" or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="WINDOWS"):
-                        self.comport.write('\r'.encode('utf-8'))
-                        self.comport.write('\n'.encode('utf-8'))
-                    elif self.txnl.get() == 'UNIX   ' or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="UNIX   "):
-                        self.comport.write('\n'.encode('utf-8'))
-                    elif self.txnl.get() == 'OLD MAC' or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="OLD MAC"):
-                        self.comport.write('\r'.encode('utf-8'))
-            elif ord(c) == 13 :
-                if self.txnl_ignore=='CR':
-                    self.txnl_ignore = ' '
-                else:
-                    self.txnl_ignore = 'LF'
-                    if self.txnl.get() == "WINDOWS" or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="WINDOWS"):
-                        self.comport.write('\r'.encode('utf-8'))
-                        self.comport.write('\n'.encode('utf-8'))
-                    elif self.txnl.get() == 'UNIX   ' or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="UNIX   "):
-                        self.comport.write('\n'.encode('utf-8'))
-                    elif self.txnl.get() == 'OLD MAC' or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="OLD MAC"):
-                        self.comport.write('\r'.encode('utf-8'))
-            else:
+            try:
                 self.comport.write(c.encode('utf-8'))
+            except:
+                self.status('txwrite timeout')
+                
+    def comnewline(self):
+        if self.txnl.get() == "WINDOWS" or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="WINDOWS"):
+            self.comchar('\r')
+            self.comchar('\n')
+        elif self.txnl.get() == 'UNIX   ' or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="UNIX   "):
+            self.comchar('\n')
+        elif self.txnl.get() == 'OLD MAC' or (self.txnl.get()== "AUTO   " and self.txnl_autostyle =="OLD MAC"):
+            self.comchar('\r')
 
     def helpabout(self):
         popup_about = tk.Tk()
