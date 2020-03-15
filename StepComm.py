@@ -56,7 +56,7 @@ from serial.tools.list_ports import comports
 import re
 import sys
 import json
-
+import argparse
 
 
 class pycom_tk(tk.Frame):
@@ -70,6 +70,9 @@ class pycom_tk(tk.Frame):
         self.grid_columnconfigure(0, weight=1) # resizable main frame
 
 
+        #####################################
+        ##          HELP and TEXT          ##
+        #####################################
         self.about_txt = """StepComm Rev 20181201
 <c>2018 William B Hunter
 A Serial Terminal Emulator with some nice features geared
@@ -174,6 +177,7 @@ options menu allows you to change the way things are displayed."""
         self.test_text = tk.StringVar()
         self.test_hist = [""]
         self.test_snl = tk.IntVar()
+
         #####################################
         ##            MENU SYSTEM          ##
         #####################################
@@ -454,20 +458,41 @@ options menu allows you to change the way things are displayed."""
         self.status_lab = tk.Label(self.status_frame,textvariable=self.status_text,
                 justify=LEFT,bg=self.bordcolor,font=self.screenFont)
         self.status_lab.pack(fill=X,expand=True,side=BOTTOM)
+        #parse the command line arguments to see if an init file was passed
+        ##########################################
+        ##     Command Line Argument Parsing    ##
+        ##########################################
+        parser = argparse.ArgumentParser(description='StepComm - Simple Terminal Emulator in Python')
+        parser.add_argument('-b','--baud', help='baud rate',choices=self.bauds)
+        parser.add_argument('-p','--port', help='port name')
+        parser.add_argument('-e','--echo', type=bool, help='echo',default=False)
+        parser.add_argument('-i','--ini', help='ini file name')
+        args = parser.parse_args()
+        if args.ini != None:
+            print("file is {}".format(args.ini))
+            f=open(args.ini)
+            self.fileparse(f)
+        #command line options override the ini file
+        if args.baud != None:
+            self.baud_combo.delete(0,"end");self.baud_combo.insert(0,args.baud)
+        if args.echo != None:
+            self.echo.set(args.echo)
+        if args.port != None:
+            self.port_combo.set(args.port)
+
         #################################
         ##         Finish Init         ##
         #################################
         self.hide_tabs()
         self.scan_port('<Double-Button-1>')
-        if len(self.comslist) != 0:
+        if len(self.comslist) == 0:
+            self.port_combo.set("")
+        elif self.port_combo.get() not in self.comslist:
             self.port_combo.set(self.comslist[0])
         self.root.after(50, self.set_port)
         self.root.after(100, self.port_in)
         self.root.protocol("WM_DELETE_WINDOW", self.exitapp)
-        #parse the command line arguments to see if an init file was passed
-        if len(sys.argv) >1 and os.path.isfile(sys.argv[1]):
-            f=open(sys.argv[1])
-            self.fileparse(f)
+        
         #self.helpabout()
     def status(self,t):
         self.status_text.set(t)
@@ -543,13 +568,15 @@ options menu allows you to change the way things are displayed."""
                     stopbits=sv, parity=pv, timeout=0, write_timeout=0.2)
             self.status('port {:s},{:s},{:s},{:s},{:s}'.format(port,bs,ps,ds,ss))
         except:
-            self.status("Failed to open port{:s}".format(self.port_combo.get()))
+            self.status("Failed to open port '{:s}'".format(self.port_combo.get()))
     def scan_port(self,event):
         #get a fresh list of comports every time the port is updated
         self.comslist = [a[0] for a in comports()]
         self.port_combo.configure(values=self.comslist)
         if len(self.comslist) == 0:
             self.status("No Serial Ports Found!")
+        else:
+            self.status("Found ports: {}".format(', '.join(map(str, self.comslist))))
     def set_portparm(self,e):
         self.set_port()
     def port_in(self):
@@ -829,6 +856,7 @@ options menu allows you to change the way things are displayed."""
 
         
 def main():
+
     root = tk.Tk()
     #root.wm_geometry("1000x500+100+100")
     app = pycom_tk(root)
