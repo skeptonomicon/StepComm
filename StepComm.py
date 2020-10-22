@@ -129,7 +129,7 @@ options menu allows you to change the way things are displayed."""
 
         self.parity_strings = ('NONE','EVEN','ODD','MARK','SPACE')
         self.bauds=('300','600','1200','2400','4800','9600','14400','19200',
-            '28800','38400','57600','115200')
+            '28800','38400','57600','115200','230400','46800')
         self.parity_consts= (serial.PARITY_NONE,serial.PARITY_EVEN,serial.PARITY_ODD,
                         serial.PARITY_MARK,serial.PARITY_SPACE)
         self.databit_strings=('5','6','7','8')
