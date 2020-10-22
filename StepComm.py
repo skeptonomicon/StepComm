@@ -543,10 +543,22 @@ options menu allows you to change the way things are displayed."""
         except:
             self.status("Failed to open file{:s}".format(self.txfilename.get()))
     def rxbrowse(self):
-        self.rxfilename = filedialog.asksavefile(mode='w',title='Select file to save captured data' )
-        print ('RX browse got {:s}'.format(self.rxfilename))
+        fname = filedialog.asksaveasfilename(title='Select capture file',filetypes = (("text files","*.txt"),("all files","*.*")))
+        if fname != '':
+            self.rxfilename.set(fname)
+            print ('Capture browse got {:s}'.format(fname))
     def rxcapfile(self):
-        print ("capture file not implemented yet")
+        print(f'capture file is {self.rxfilename.get()}')
+
+        try:
+            file = open(self.rxfilename.get(), 'w')
+            str = self.textarea.get(1.0, END)
+            file.write(str)
+            file.close()
+            print(f'captured file {self.rxfilename.get()}, wrote {len(str)} bytes')
+            self.status(f'captured file {self.rxfilename.get()}, wrote {len(str)} bytes')
+        except:
+            self.status("Failed to write capture file ")
     def set_port(self):
 
         port = self.port_combo.get()
