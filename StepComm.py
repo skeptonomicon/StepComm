@@ -438,6 +438,10 @@ options menu allows you to change the way things are displayed."""
                 text='Capture',font=self.controlFont,
                 command = self.rxcapfile)
         self.rxcap_btn.grid(row=0,column=8,padx=4)
+        self.clrscr_btn = tk.Button(self.csfile_frame,width=6,height=1,bg="snow",
+                text='ClrScr',font=self.controlFont,
+                command = self.clrscr)
+        self.clrscr_btn.grid(row=0,column=9,padx=4)
        
         #################################
         ##       Options SETTINGS      ##
@@ -543,7 +547,7 @@ options menu allows you to change the way things are displayed."""
         except:
             self.status("Failed to open file{:s}".format(self.txfilename.get()))
     def rxbrowse(self):
-        fname = filedialog.asksaveasfilename(title='Select capture file',filetypes = (("text files","*.txt"),("all files","*.*")))
+        fname = filedialog.askopenfilename(title='Select capture file',filetypes = (("text files","*.txt"),("all files","*.*")))
         if fname != '':
             self.rxfilename.set(fname)
             print ('Capture browse got {:s}'.format(fname))
@@ -642,6 +646,8 @@ options menu allows you to change the way things are displayed."""
             self.textarea.see("end")
         self.root.after(10,self.port_in)
         #self.after(100,self.port_in)
+    def clrscr(self):
+       self.textarea.delete(1.0,END)
     def send_btnsel (self,i):
         t=self.send_text[i].get()
         s=self.send_snl[i].get()
@@ -797,6 +803,7 @@ options menu allows you to change the way things are displayed."""
                'parity':self.parity_combo.get(),'databits':self.databits_combo.get(),
                'stopbits':self.stopbits_combo.get(),'echo':self.echo.get(),
                'sendhist':self.send_hist,'send_macro':self.macro_text,'send_snls':snls,
+               'capfile':self.rxfilename.get(),
                'txnl':self.txnl.get(),'txnl_autostyle':self.txnl_autostyle}
         txt = json.dumps(jdict)
         file = filedialog.asksaveasfile(mode='w',title='Select file for saving',
@@ -851,6 +858,7 @@ options menu allows you to change the way things are displayed."""
         self.macro_text=jdict['send_macro']
         self.macroedit.delete("1.0", END) 
         self.macroedit.insert("1.0",self.macro_text[self.macro_sel.get()-1])
+        self.rxfilename.set(jdict['capfile'])
         self.txnl.set(jdict['txnl'])
         self.txnl_autostyle = jdict['txnl_autostyle']
         self.status("loaded settings from " + file.name)
