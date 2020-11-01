@@ -494,7 +494,7 @@ options menu allows you to change the way things are displayed."""
         elif self.port_combo.get() not in self.comslist:
             self.port_combo.set(self.comslist[0])
         self.root.after(50, self.set_port)
-        self.root.after(100, self.port_in)
+        self.root.after(2000, self.port_in)
         self.root.protocol("WM_DELETE_WINDOW", self.exitapp)
         
         #self.helpabout()
@@ -596,54 +596,57 @@ options menu allows you to change the way things are displayed."""
     def set_portparm(self,e):
         self.set_port()
     def port_in(self):
-        while self.comport.isOpen():
-            c=self.comport.read(1)
-            if len(c) == 0:
-                break
-            #else:
-                #print('port_in: char = {:02x}, rxnl style is {:s}'.format(ord(c),self.rxnl.get())) 
-            if ord(c) == 10 :
-                #print('CHAR=LF')
-                if self.rxnl_ignore=='LF':
-                    #print('{} LF, ignored LF'.format(self.rxnl.get()))
-                    self.rxnl_ignore = ' '
-                    self.txnl_autostyle = "WINDOWS"  #save auto txnl style
-                else:
-                    #print('{} LF, used LF'.format(self.rxnl.get())
-                    self.textarea.insert(tk.END, "\n",'rxtext')
-                    self.rxnl_ignore = 'CR'                    
-            elif ord(c) == 13:
-                if self.rxnl_ignore=='CR':
-                    #print('{} CR, ignored CR'.format(self.rxnl.get()))
-                    self.rxnl_ignore = ' '
-                    self.txnl_autostyle = "WINDOWS"  #save auto txnl style
-
-                else:
-                    self.textarea.insert(tk.END, "\n",'rxtext')
-                    #print('{} CR, used CR'.format(self.rxnl.get()))
-                    self.rxnl_ignore = 'LF'
-            elif c == b'\b':
-                #print('RX CHAR=BS')
-                self.rxnl_ignore = ' '
-                try:
-                    prevtagchar = self.textarea.index("rxtext.last-1c")
-                    #print('last rxchar at {}'.format(prevtagchar))
-                    #print('last char ascii is "{}"'.format(self.textarea.get(prevtagchar)))
-                    #print('delete ascii char{} at index {}'.format(ord(self.textarea.get(prevtagchar)),prevtagchar))
-                    self.textarea.delete(prevtagchar)
-                except tk.TclError:
-                    pass
-                    #print('no RX text to backspace over')
-            else:
-                #print('port_in = ASCII {:x}'.format(ord(c)))
-                self.textarea.insert(tk.END, c,'rxtext')
-                #record the auto detected TX NL style
-                if self.rxnl_ignore == 'CR':
-                    self.txnl_autostyle = "OLD MAC"
-                elif self.rxnl_ignore == 'LF':
-                    self.txnl_autostyle = "UNIX   "
-                self.rxnl_ignore = ' '
-            self.textarea.see("end")
+        if self.comport.isOpen():
+            inlen = self.comport.in_waiting
+            if inlen > 0:
+                l = self.comport.read(inlen)
+                #print(f'port_in: l type={type(l)},len={len(l)}')
+                for c in l:
+                    #print('port_in: char = {:02x}, rxnl style is {:s}'.format(ord(c),self.rxnl.get())) 
+                    #print(f'port_in: c type={type(c)},c={c:x}="{chr(c)}"')
+                    if c == b'\l' :
+                        #print('CHAR=LF')
+                        if self.rxnl_ignore=='LF':
+                            #print('{} LF, ignored LF'.format(self.rxnl.get()))
+                            self.rxnl_ignore = ' '
+                            self.txnl_autostyle = "WINDOWS"  #save auto txnl style
+                        else:
+                            #print('{} LF, used LF'.format(self.rxnl.get())
+                            self.textarea.insert(tk.END, "\n",'rxtext')
+                            self.rxnl_ignore = 'CR'                    
+                    elif c == b'\r':
+                        if self.rxnl_ignore=='CR':
+                            #print('{} CR, ignored CR'.format(self.rxnl.get()))
+                            self.rxnl_ignore = ' '
+                            self.txnl_autostyle = "WINDOWS"  #save auto txnl style
+        
+                        else:
+                            self.textarea.insert(tk.END, "\n",'rxtext')
+                            #print('{} CR, used CR'.format(self.rxnl.get()))
+                            self.rxnl_ignore = 'LF'
+                    elif c == b'\b':
+                        #print('RX CHAR=BS')
+                        self.rxnl_ignore = ' '
+                        try:
+                            prevtagchar = self.textarea.index("rxtext.last-1c")
+                            #print('last rxchar at {}'.format(prevtagchar))
+                            #print('last char ascii is "{}"'.format(self.textarea.get(prevtagchar)))
+                            #print('delete ascii char{} at index {}'.format(ord(self.textarea.get(prevtagchar)),prevtagchar))
+                            self.textarea.delete(prevtagchar)
+                        except tk.TclError:
+                            pass
+                            #print('no RX text to backspace over')
+                    else:
+                        #print('port_in = ASCII {:x}'.format(ord(c)))
+                        char = chr(c)
+                        self.textarea.insert(tk.END, char,'rxtext')
+                        #record the auto detected TX NL style
+                        if self.rxnl_ignore == 'CR':
+                            self.txnl_autostyle = "OLD MAC"
+                        elif self.rxnl_ignore == 'LF':
+                            self.txnl_autostyle = "UNIX   "
+                        self.rxnl_ignore = ' '
+        self.textarea.see("end")
         self.root.after(10,self.port_in)
         #self.after(100,self.port_in)
     def clrscr(self):
