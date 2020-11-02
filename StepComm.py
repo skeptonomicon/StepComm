@@ -429,15 +429,15 @@ options menu allows you to change the way things are displayed."""
         self.rxfile_entry=tk.Entry(self.csfile_frame,width=20,
             font=self.controlFont,textvariable=self.rxfilename)
         self.rxfile_entry.grid(row=0,column=6,sticky=tk.W)
-        self.rxfilename.set('')
-        self.rxbrowse_btn = tk.Button(self.csfile_frame,width=6,height=1,bg="snow",
-                text='Browse',font=self.controlFont,
-                command = self.rxbrowse)
-        self.rxbrowse_btn.grid(row=0,column=7,padx=4)
+        self.rxfilename.set('./cap.txt')
         self.rxcap_btn = tk.Button(self.csfile_frame,width=6,height=1,bg="snow",
                 text='Capture',font=self.controlFont,
-                command = self.rxcapfile)
-        self.rxcap_btn.grid(row=0,column=8,padx=4)
+                command = self.rxbrowse)
+        self.rxcap_btn.grid(row=0,column=7,padx=4)
+        #self.rxcap_btn = tk.Button(self.csfile_frame,width=6,height=1,bg="snow",
+        #        text='Capture',font=self.controlFont,
+        #        command = self.rxcapfile)
+        #self.rxcap_btn.grid(row=0,column=8,padx=4)
         self.clrscr_btn = tk.Button(self.csfile_frame,width=6,height=1,bg="snow",
                 text='ClrScr',font=self.controlFont,
                 command = self.clrscr)
@@ -473,9 +473,8 @@ options menu allows you to change the way things are displayed."""
         parser.add_argument('-i','--ini', help='ini file name')
         args = parser.parse_args()
         if args.ini != None:
-            print("file is {}".format(args.ini))
-            f=open(args.ini)
-            self.fileparse(f)
+            print(f'ini file is {args.ini}')
+            self.fileparse(args.ini)
         #command line options override the ini file
         if args.baud != None:
             self.baud_combo.delete(0,"end");self.baud_combo.insert(0,args.baud)
@@ -494,7 +493,7 @@ options menu allows you to change the way things are displayed."""
         elif self.port_combo.get() not in self.comslist:
             self.port_combo.set(self.comslist[0])
         self.root.after(50, self.set_port)
-        self.root.after(2000, self.port_in)
+        self.root.after(100, self.port_in)
         self.root.protocol("WM_DELETE_WINDOW", self.exitapp)
         
         #self.helpabout()
@@ -547,13 +546,10 @@ options menu allows you to change the way things are displayed."""
         except:
             self.status("Failed to open file{:s}".format(self.txfilename.get()))
     def rxbrowse(self):
-        fname = filedialog.askopenfilename(title='Select capture file',filetypes = (("text files","*.txt"),("all files","*.*")))
+        fname = filedialog.asksaveasfilename(title='Select capture file',initialdir ='.',filetypes = (("text files","*.txt"),("all files","*.*")))
         if fname != '':
             self.rxfilename.set(fname)
             print ('Capture browse got {:s}'.format(fname))
-    def rxcapfile(self):
-        print(f'capture file is {self.rxfilename.get()}')
-
         try:
             file = open(self.rxfilename.get(), 'w')
             str = self.textarea.get(1.0, END)
@@ -595,6 +591,31 @@ options menu allows you to change the way things are displayed."""
             self.status("Found ports: {}".format(', '.join(map(str, self.comslist))))
     def set_portparm(self,e):
         self.set_port()
+    def clrscr(self):
+       self.textarea.delete(1.0,END)
+    def send_btnsel (self,i):
+        t=self.send_text[i].get()
+        s=self.send_snl[i].get()
+        #print('send_btnsel i={:d}, t={:s}, s={:d} = '.format(i,t,s))
+        sys.stdout.flush()
+        try:
+            #If this item is already in hist, move to the top
+            idx = self.send_hist[i].index(t)
+            self.send_hist[i].insert(0,self.send_hist[i].pop(idx))
+        except ValueError:
+            #if item is not in list, add to top and limit to 10 items
+            self.send_hist[i].insert(0,t)
+        if len(self.send_hist[i])>1 and self.send_hist[-1]=="":
+            self.send_hist[i].pop()
+        while len(self.send_hist[i]) > 10:
+            self.send_hist[i].pop()
+        self.send_combo[i]['values']=self.send_hist[i]
+        self.stringout(t,s)
+    def set_macro (self):
+        self.macro_text[self.macro_oldsel-1]=self.macroedit.get(1.0,END)[:-1]
+        self.macro_oldsel = self.macro_sel.get()
+        self.macroedit.delete("1.0", END) 
+        self.macroedit.insert("1.0",self.macro_text[self.macro_sel.get()-1])
     def port_in(self):
         if self.comport.isOpen():
             inlen = self.comport.in_waiting
@@ -649,31 +670,6 @@ options menu allows you to change the way things are displayed."""
         self.textarea.see("end")
         self.root.after(10,self.port_in)
         #self.after(100,self.port_in)
-    def clrscr(self):
-       self.textarea.delete(1.0,END)
-    def send_btnsel (self,i):
-        t=self.send_text[i].get()
-        s=self.send_snl[i].get()
-        #print('send_btnsel i={:d}, t={:s}, s={:d} = '.format(i,t,s))
-        sys.stdout.flush()
-        try:
-            #If this item is already in hist, move to the top
-            idx = self.send_hist[i].index(t)
-            self.send_hist[i].insert(0,self.send_hist[i].pop(idx))
-        except ValueError:
-            #if item is not in list, add to top and limit to 10 items
-            self.send_hist[i].insert(0,t)
-        if len(self.send_hist[i])>1 and self.send_hist[-1]=="":
-            self.send_hist[i].pop()
-        while len(self.send_hist[i]) > 10:
-            self.send_hist[i].pop()
-        self.send_combo[i]['values']=self.send_hist[i]
-        self.stringout(t,s)
-    def set_macro (self):
-        self.macro_text[self.macro_oldsel-1]=self.macroedit.get(1.0,END)[:-1]
-        self.macro_oldsel = self.macro_sel.get()
-        self.macroedit.delete("1.0", END) 
-        self.macroedit.insert("1.0",self.macro_text[self.macro_sel.get()-1])
     def typed_char(self,event):
         if len(event.char) == 1:
             #print ('character {}'.format(ord(event.char)))
@@ -820,16 +816,20 @@ options menu allows you to change the way things are displayed."""
         except:
             self.status('failed to save settings to ' + file.name)            
     def fileload(self):
-        file = filedialog.askopenfile(title='Select file for loading',
+        fn = filedialog.askopenfilename(title='Select file for loading',
             filetypes = (("Settings Files","*.ini"),("all files","*.*")))
-        self.fileparse(file)
-    def fileparse(self,file):
-        #print('file is {}'.format(file))
-        if file == None:
-            self.status('Bad file name {}'.format(file.name))
-            #print('Bad file name {}'.format(file.name))
+        self.fileparse(fn)
+    def fileparse(self,fn):
+        if not os.path.isfile(fn):
+            self.status(f'Bad ini file name {fn}')
             return -1
-        txt = file.read()
+        try:
+            file = open(fn, 'r')
+            txt = file.read()
+        except:
+            #print('failed to open ini file ' + fname)
+            self.status('failed to open ini file ' + fn)            
+            return -1
         if len(txt) == 0:
             self.status('Empty file ' + file.name)            
             #print('Empty file ' + file.name)
@@ -844,26 +844,39 @@ options menu allows you to change the way things are displayed."""
             #print('file ' + file.name + ' is not valid Stepcomm ini file')
             self.status('file ' + file.name + ' is not valid Stepcomm ini file')
             return -1
-        self.port_combo.delete(0,"end");self.port_combo.insert(0,jdict['port'])
-        self.baud_combo.delete(0,"end");self.baud_combo.insert(0,jdict['baud'])
-        self.parity_combo.delete(0,"end");self.parity_combo.insert(0,jdict['parity'])
-        self.databits_combo.delete(0,"end");self.databits_combo.insert(0,jdict['databits'])
-        self.stopbits_combo.delete(0,"end");self.stopbits_combo.insert(0,jdict['stopbits'])
-        self.echo.set(jdict['echo'])
-        self.set_port()
-        self.send_hist=jdict['sendhist']
-        for i in range(len(self.send_hist)):
-            self.send_combo[i]['values'] = self.send_hist[i]
-        snls = jdict['send_snls']
-        [self.send_snl[i].set(snls[i]) for i in range(len(snls))]
-        self.macro_sel.set(1)
-        self.macro_oldsel = 1
-        self.macro_text=jdict['send_macro']
-        self.macroedit.delete("1.0", END) 
-        self.macroedit.insert("1.0",self.macro_text[self.macro_sel.get()-1])
-        self.rxfilename.set(jdict['capfile'])
-        self.txnl.set(jdict['txnl'])
-        self.txnl_autostyle = jdict['txnl_autostyle']
+        if 'port' in jdict:
+            self.port_combo.delete(0,"end");self.port_combo.insert(0,jdict['port'])
+        if 'baud' in jdict:
+            self.baud_combo.delete(0,"end");self.baud_combo.insert(0,jdict['baud'])
+        if 'parity' in jdict:
+            self.parity_combo.delete(0,"end");self.parity_combo.insert(0,jdict['parity'])
+        if 'databits' in jdict:
+            self.databits_combo.delete(0,"end");self.databits_combo.insert(0,jdict['databits'])
+        if 'stopbits' in jdict:
+            self.stopbits_combo.delete(0,"end");self.stopbits_combo.insert(0,jdict['stopbits'])
+        if 'echo' in jdict:
+            self.echo.set(jdict['echo'])
+        if 'port' in jdict:
+            self.set_port()
+        if 'sendhist' in jdict:
+            self.send_hist=jdict['sendhist']
+            for i in range(len(self.send_hist)):
+                self.send_combo[i]['values'] = self.send_hist[i]
+        if 'send_snls' in jdict:
+            snls = jdict['send_snls']
+            [self.send_snl[i].set(snls[i]) for i in range(len(snls))]
+        if 'send_macro' in jdict:
+            self.macro_sel.set(1)
+            self.macro_oldsel = 1
+            self.macro_text=jdict['send_macro']
+            self.macroedit.delete("1.0", END) 
+            self.macroedit.insert("1.0",self.macro_text[self.macro_sel.get()-1])
+        if 'capfile' in jdict:
+            self.rxfilename.set(jdict['capfile'])
+        if 'txnl' in jdict:
+            self.txnl.set(jdict['txnl'])
+        if 'txnl_autostyle' in jdict:
+            self.txnl_autostyle = jdict['txnl_autostyle']
         self.status("loaded settings from " + file.name)
     
     def exitapp(self):
