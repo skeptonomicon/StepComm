@@ -668,7 +668,7 @@ options menu allows you to change the way things are displayed."""
                         elif self.rxnl_ignore == 'LF':
                             self.txnl_autostyle = "UNIX   "
                         self.rxnl_ignore = ' '
-            self.textarea.see("end")
+                self.textarea.see("end")
         self.root.after(10,self.port_in)
         #self.after(100,self.port_in)
     def typed_char(self,event):
