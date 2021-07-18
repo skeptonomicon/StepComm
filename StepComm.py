@@ -469,7 +469,7 @@ options menu allows you to change the way things are displayed."""
         parser = argparse.ArgumentParser(description='StepComm - Simple Terminal Emulator in Python')
         parser.add_argument('-b','--baud', help='baud rate',choices=self.bauds)
         parser.add_argument('-p','--port', help='port name')
-        parser.add_argument('-e','--echo', type=bool, help='echo',default=False)
+        parser.add_argument('-e','--echo', help='echo ON or OFF')
         parser.add_argument('-i','--ini', help='ini file name')
         args = parser.parse_args()
         if args.ini != None:
@@ -478,8 +478,9 @@ options menu allows you to change the way things are displayed."""
         #command line options override the ini file
         if args.baud != None:
             self.baud_combo.delete(0,"end");self.baud_combo.insert(0,args.baud)
-        if args.echo != None:
-            self.echo.set(args.echo)
+        if args.echo == 'ON' or args.echo == 'OFF':
+            print('setting echo to ' +  jdict['echo'] + ' due to command line argument')
+            self.echo.set(jdict['echo'])
         if args.port != None:
             self.port_combo.set(args.port)
 
@@ -667,7 +668,7 @@ options menu allows you to change the way things are displayed."""
                         elif self.rxnl_ignore == 'LF':
                             self.txnl_autostyle = "UNIX   "
                         self.rxnl_ignore = ' '
-        self.textarea.see("end")
+            self.textarea.see("end")
         self.root.after(10,self.port_in)
         #self.after(100,self.port_in)
     def typed_char(self,event):
@@ -820,6 +821,7 @@ options menu allows you to change the way things are displayed."""
             filetypes = (("Settings Files","*.ini"),("all files","*.*")))
         self.fileparse(fn)
     def fileparse(self,fn):
+        fn=fn.strip()
         if not os.path.isfile(fn):
             self.status(f'Bad ini file name {fn}')
             return -1
@@ -855,7 +857,10 @@ options menu allows you to change the way things are displayed."""
         if 'stopbits' in jdict:
             self.stopbits_combo.delete(0,"end");self.stopbits_combo.insert(0,jdict['stopbits'])
         if 'echo' in jdict:
+            #print('ini echo mode is ' + jdict['echo'])
             self.echo.set(jdict['echo'])
+        #else:
+            #print('ini echo mode not found')
         if 'port' in jdict:
             self.set_port()
         if 'sendhist' in jdict:
